@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "task-payroll-preparation"
+version = "0.1.0"
+description = ""
+authors = ["A-V-tor <avtorca4@gmail.com>"]
+readme = "README.md"
+packages = [{include = "task_payroll_preparation"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiogram = "^2.25.1"
+python-dotenv = "^1.0.0"
+pymongo = "^4.3.3"
+pandas = "^2.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+blue = "^0.9.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
