@@ -1,4 +1,14 @@
 def get_pipeline(beginning_of_period, end_of_period, period):
+    """ Конвеер агрегации данных.
+
+    Args:
+        beginning_of_period: начало периода агрегации
+        end_of_period: конец периода агрегации данных
+        period: еденица агрегации
+
+    Returns:
+        list: список для выполнения агрегации
+    """
     lt = '$lt'
     if period == 'hour':
         date_format = '%Y-%m-%dT%H:00:00'

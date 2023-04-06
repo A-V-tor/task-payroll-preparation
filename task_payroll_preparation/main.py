@@ -13,7 +13,7 @@ from pipline import get_pipeline
 from other import get_freq_for_pandas, get_dates_list_for_check
 
 load_dotenv(find_dotenv())
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=os.getenv('token'))
 dp = Dispatcher(
@@ -23,38 +23,55 @@ dp = Dispatcher(
 
 @dp.message_handler(Text(startswith=['{']))
 async def send_data(message: types.Message):
-    json_message = json.loads(message.text)
+    """
+    Получение сообщения с набором данных и
 
-    beginning_of_period = datetime.strptime(
-        json_message.get('dt_from'), '%Y-%m-%dT%H:%M:%S'
-    )
-    end_of_period = datetime.strptime(
-        json_message.get('dt_upto'), '%Y-%m-%dT%H:%M:%S'
-    )
-    period = json_message.get('group_type')
+    ответ агрегированых данных в json формате.
 
-    freq = get_freq_for_pandas(period)
-    pipeline = get_pipeline(beginning_of_period, end_of_period, period)
+    Args:
+         message: телеграм сообщение
 
-    list_dates = []
-    list_values = []
-    result = list(collection.aggregate(pipeline))
-    for i in result:
-        list_dates.append(i["_id"])
-        list_values.append(i["total_value"])
+    Returns:
+        json_answer (json): словарь агрегированых данных или
 
-    dates = get_dates_list_for_check(
-        json_message.get('dt_from'), json_message.get('dt_upto'), freq
-    )
-    if freq:
-        for i, k in enumerate(dates):
-            print(i, k)
-            if k not in list_dates:
-                list_dates.insert(i, k)
-                list_values.insert(i, 0)
+            информация об ошибке
+    """
+    try:
+        json_message = json.loads(message.text)
 
-    json_answer = json.dumps({"dataset": list_values, "labels": list_dates})
+        beginning_of_period = datetime.strptime(
+            json_message.get('dt_from'), '%Y-%m-%dT%H:%M:%S'
+        )
+        end_of_period = datetime.strptime(
+            json_message.get('dt_upto'), '%Y-%m-%dT%H:%M:%S'
+        )
+        period = json_message.get('group_type')
+
+        freq = get_freq_for_pandas(period)
+        pipeline = get_pipeline(beginning_of_period, end_of_period, period)
+
+        list_dates = []
+        list_values = []
+        result = list(collection.aggregate(pipeline))
+        for i in result:
+            list_dates.append(i["_id"])
+            list_values.append(i["total_value"])
+
+        dates = get_dates_list_for_check(
+            json_message.get('dt_from'), json_message.get('dt_upto'), freq
+        )
+        if freq:
+            for i, k in enumerate(dates):
+                if k not in list_dates:
+                    list_dates.insert(i, k)
+                    list_values.insert(i, 0)
+
+        json_answer = json.dumps({"dataset": list_values, "labels": list_dates})
+    except Exception as e:
+        json_answer = json.dumps({"error": f"{e}"})
+
     await message.answer(json_answer)
 
 
-executor.start_polling(dp, skip_updates=True)
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True)
