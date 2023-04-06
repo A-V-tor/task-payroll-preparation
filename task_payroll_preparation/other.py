@@ -3,7 +3,7 @@ import pandas as pd
 
 def get_freq_for_pandas(period):
     if period == 'month':
-        freq = 'M'
+        freq = None
     if period == 'day':
         freq = 'D'
     if period == 'hour':

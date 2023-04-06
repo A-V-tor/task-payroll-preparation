@@ -13,7 +13,7 @@ from pipline import get_pipeline
 from other import get_freq_for_pandas, get_dates_list_for_check
 
 load_dotenv(find_dotenv())
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 bot = Bot(token=os.getenv('token'))
 dp = Dispatcher(
@@ -40,19 +40,21 @@ async def send_data(message: types.Message):
     list_values = []
     result = list(collection.aggregate(pipeline))
     for i in result:
-        list_dates.append(i['_id'])
-        list_values.append(i['total_value'])
+        list_dates.append(i["_id"])
+        list_values.append(i["total_value"])
 
     dates = get_dates_list_for_check(
         json_message.get('dt_from'), json_message.get('dt_upto'), freq
     )
+    if freq:
+        for i, k in enumerate(dates):
+            print(i, k)
+            if k not in list_dates:
+                list_dates.insert(i, k)
+                list_values.insert(i, 0)
 
-    for i, k in enumerate(dates):
-        if k not in list_dates:
-            list_dates.insert(i, k)
-            list_values.insert(i, 0)
-
-    await message.reply({'dataset': list_values, 'labels': list_dates})
+    json_answer = json.dumps({"dataset": list_values, "labels": list_dates})
+    await message.answer(json_answer)
 
 
 executor.start_polling(dp, skip_updates=True)

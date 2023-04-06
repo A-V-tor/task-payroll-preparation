@@ -1,9 +1,11 @@
 def get_pipeline(beginning_of_period, end_of_period, period):
+    lt = '$lt'
     if period == 'hour':
         date_format = '%Y-%m-%dT%H:00:00'
     if period == 'day':
         date_format = '%Y-%m-%dT00:00:00'
     if period == 'month':
+        lt = '$lte'
         date_format = '%Y-%m-01T00:00:00'
 
     return [
@@ -11,7 +13,7 @@ def get_pipeline(beginning_of_period, end_of_period, period):
             '$match': {
                 'dt': {
                     '$gte': beginning_of_period,
-                    '$lt': end_of_period,
+                    f'{lt}': end_of_period,
                 }
             }
         },
